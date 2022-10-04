@@ -1,12 +1,23 @@
+const mysql = require('mysql2');
+const db = mysql.createConnection(
+    {
+      host: 'localhost',
+      // MySQL username,
+      user: 'root',
+      // MySQL password
+      password: 'root',
+      database: 'employee_db'
+    }
+);
+
 const inquirer = require('inquirer');
-const db = require('./db/sqldb');
 
 const options = [
     {
         type: 'list',
         name: 'option',
         message: 'What would you like to do?',
-        choices: [ "View All Departments", "View All Roles", "Add A Department", "Add An Employee", "Update Employee Role", "Done" ]
+        choices: [ "View All Departments", "View All Roles", "View All Employees", "Add A Department", "Add A Role", "Add An Employee", "Update Employee Role", "Done" ]
     }
 ]
 
@@ -23,131 +34,172 @@ function newOption()
             case "View All Roles":
             showRoles();
                 break;
+            case "View All Employees":
+            showEmployees();
+                break;
             case "Add A Department":
             newDepartment();
+                break;
+            case "Add A Role":
+            newRole();
                 break;
             case "Add An Employee":
             newEmployee();
                 break;
             case "Update Employee Role":
-            newRole();
+            updateRole();
                 break;
             case "Done":
-            console.log("Thats all!");
+            db.end();
                 break;
         }
      })
 }
 
 function showDepartments()
-{
-    console.log("You want to show all Departments!");
-    
-    // db.query(
-    //     'SELECT * FROM department;',
-    //     (err, results) => {
-    //         console.table(results);
-    //         menu();
-    //     }
-    // )
+{   
+    db.query(
+        'SELECT * FROM department;',
+        (err, results) => {
+            console.table(results);
+        }
+    )
     
     newOption();
 }
 
 function newDepartment()
 {
-    console.log("You want add a new Department!");
-
-    // inquirer.prompt(
-    //     [{
-    //         type: 'input',
-    //         name: 'department',
-    //         message: 'What is the name of the department? (Required)',
-    //         validate: departmentInput => {
-    //             if (departmentInput) 
-    //             {
-    //                 const sql = " INSERT INTO departments(name) VALUE (";
-    //                 mysql.query(sql+departmentInputfunction+");")
-    //                 return true;
-    //             } 
-    //             else 
-    //             {
-    //                 console.log('Please enter a department name!');
-    //                 return false;
-    //             }
-    //         }
-    //     }
-    //     ])
-    
-    newOption();
+    inquirer.prompt(
+        [{
+            type: 'input',
+            name: 'department',
+            message: 'What is the name of the department? (Required)'
+        }])
+        .then(answer  => {
+            db.query(`INSERT INTO department(department_name) VALUES ("${answer.department}")`, function (err, result) {
+                if (err) throw err;
+            },
+            console.log(`${answer.department} Added!`),
+            newOption()
+            )
+})
 }
 
 function showRoles()
 {
-    console.log("You want show all Roles!");
-
-    // db.query(
-    //     'SELECT * FROM roles;',
-    //     (err, results) => {
-    //         console.table(results);
-    //         menu();
-    //     }
-    // )
+    db.query(
+        'SELECT * FROM roles;',
+        (err, results) => {
+            console.table(results);
+        }
+    )
 
     newOption();
 }
 
-// const employeeQuestions = [
-//     {
-//         type: 'input',
-//         name: 'fname',
-//         message: 'What is the employee first name? (Required)',
-//         validate: nameInput => {
-//             if (nameInput) {
-//                 return true;
-//             } else {
-//                 console.log('Please enter a first name!');
-//                 return false;
-//             }
-//         }
-//     },
-//     {
-//         type: 'input',
-//         name: 'lname',
-//         message: 'What is the employee last name? (Required)',
-//         validate: nameInput => {
-//             if (nameInput) {
-//                 return true;
-//             } else {
-//                 console.log('Please enter a last name!');
-//                 return false;
-//             }
-//         }
-//     },
-    // {
-    //     type: 'list',
-    //     name: 'role',
-    //     message: 'What is the Employees role? (Required)',
-    //     choices: await showDepartments(),
-    //     when(answers){
-    //         return answers.department_name;
-    //     }
-    // },
-// ]
+function showEmployees()
+{
+    db.query(
+        'SELECT * FROM employee;',
+        (err, results) => {
+            console.table(results);
+        }
+    )
+
+    newOption();
+}
 
 function newEmployee()
 {
     console.log("You want to add a new Employee!");
-
-    newOption();
-
-}
+    
+    db.query(`SELECT * FROM roles;`, (err, res) =>
+    {
+        if(err) throw err;
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'fname',
+                message: 'What is the employee first name? (Required)',
+                validate: nameInput => {
+                    if (nameInput) {
+                        return true;
+                    } else {
+                        console.log('Please enter a first name!');
+                        return false;
+                    }
+                }
+            },
+            {
+                type: 'input',
+                name: 'lname',
+                message: 'What is the employee last name? (Required)',
+                validate: nameInput => {
+                    if (nameInput) {
+                        return true;
+                    } else {
+                        console.log('Please enter a last name!');
+                        return false;
+                    }
+                }
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: 'What is the Employees role? (Required)',
+                choices: res.map((role) => role.title)
+            },
+            
+        ]).then((answer) => {
+            const convertRole = res.find((role) => role.title === answer.role);
+            const firstName = answer.fname;
+            const lastName = answer.lname;
+            db.query(`SELECT * FROM employee;`, (err, res) =>
+            {
+                if(err) throw err;
+                inquirer.prompt([{
+                    type: 'list',
+                    name: 'manager',
+                    message: 'Who is the employees manager? (Required)',
+                    choices: res.map((employee) => employee.first_name)
+                }]).then((answer) => {
+                    const managerID = res.find((employee) => employee.first_name === answer.manager);
+                    console.log(answer);
+                    db.query(`INSERT INTO employee SET ?`, {
+                        first_name: firstName,
+                        last_name: lastName,
+                        role_id: convertRole.id,
+                        manager_id: managerID.id
+                    }); newOption();
+                })   
+            }) 
+    })
+})}
 
 function newRole()
 {
-    console.log("You want to update a Role!");
-
-    newOption();
+    inquirer.prompt(
+        [{
+            type: 'input',
+            name: 'title',
+            message: 'What is the title of the role? (Required)'
+        }])
+        .then(answer  => {
+            db.query(`INSERT INTO roles(title) VALUES ("${answer.title}")`, function (err, result) {
+                if (err) throw err;
+            },
+            inquirer.prompt([{
+                type: 'input',
+                name: 'salary',
+                message: 'What is the salary of the role? (Required)'
+            }])
+            ).then(answer  => {
+                db.query(`INSERT INTO roles(salary) VALUES ("${answer.salary}")`, function (err, result) {
+                    if (err) throw err;
+                },
+                console.log("Added!"))})
+})
 }
 
 newOption();
