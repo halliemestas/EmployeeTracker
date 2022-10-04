@@ -142,7 +142,7 @@ function showRoles()
     //         return answers.department_name;
     //     }
     // },
-]
+// ]
 
 function newEmployee()
 {
