@@ -1,17 +1,5 @@
-const mysql = require('mysql2');
-const db = mysql.createConnection(
-    {
-      host: 'localhost',
-      // MySQL username,
-      user: 'root',
-      // MySQL password
-      password: 'root',
-      database: 'employees_db'
-    },
-    console.log("Connection to database successful")
-);
-
 const inquirer = require('inquirer');
+const db = require('./db/sqldb');
 
 const options = [
     {
@@ -54,6 +42,7 @@ function newOption()
 function showDepartments()
 {
     console.log("You want to show all Departments!");
+    
     // db.query(
     //     'SELECT * FROM department;',
     //     (err, results) => {
@@ -61,6 +50,8 @@ function showDepartments()
     //         menu();
     //     }
     // )
+    
+    newOption();
 }
 
 function newDepartment()
@@ -146,7 +137,7 @@ function showRoles()
 
 function newEmployee()
 {
-    console.log("You want add a new Employee!");
+    console.log("You want to add a new Employee!");
 
     newOption();
 
@@ -154,7 +145,7 @@ function newEmployee()
 
 function newRole()
 {
-    console.log("You want add a new Role!");
+    console.log("You want to update a Role!");
 
     newOption();
 }
