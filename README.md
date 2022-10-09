@@ -54,7 +54,7 @@ SO THAT I can organize and plan my business
 
 ## Walkthrough Video 
 
-Coming Soon!
+https://github.com/halliemestas/EmployeeTracker
 
 ## Live Link?
 Because this application isn't deployed, the walkthrough video demonstrates its functionality.
