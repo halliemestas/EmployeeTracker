@@ -111,9 +111,7 @@ function showEmployees()
 }
 
 function newEmployee()
-{
-    console.log("You want to add a new Employee!");
-    
+{   
     db.query(`SELECT * FROM roles;`, (err, res) =>
     {
         if(err) throw err;
@@ -180,26 +178,68 @@ function newEmployee()
 function newRole()
 {
     inquirer.prompt(
-        [{
+        [
+            {
             type: 'input',
             name: 'title',
             message: 'What is the title of the role? (Required)'
-        }])
-        .then(answer  => {
-            db.query(`INSERT INTO roles(title) VALUES ("${answer.title}")`, function (err, result) {
-                if (err) throw err;
             },
-            inquirer.prompt([{
-                type: 'input',
-                name: 'salary',
-                message: 'What is the salary of the role? (Required)'
-            }])
-            ).then(answer  => {
-                db.query(`INSERT INTO roles(salary) VALUES ("${answer.salary}")`, function (err, result) {
-                    if (err) throw err;
-                },
-                console.log("Added!"))})
-})
+            {
+            type: 'input',
+            name: 'salary',
+            message: 'What is the salary of the role? (Required)'
+            }
+        ])
+        .then(answer  => {
+            db.query(`INSERT INTO roles SET ?`, {
+                title: answer.title,
+                salary: answer.salary
+            }); 
+            newOption();
+        })
 }
+
+function updateRole()
+{
+    db.query(`SELECT * FROM employee;`, (err, res) =>
+    {
+        if(err) throw err;
+        inquirer.prompt(
+            [{
+                type: 'list',
+                name: 'employee',
+                message: 'What Employee needs updated?? (Required)',
+                choices: res.map((employee) => employee.first_name)
+            }]).then(answer => {
+                const convertEmployee = res.find((employee) => employee.first_name === answer.employee);
+                console.log(convertEmployee.first_name);
+                db.query(`SELECT * FROM roles;`, (err, res) =>
+                {
+                    if(err) throw err;
+                    inquirer.prompt(
+                        [{
+                            type: 'list',
+                            name: 'roles',
+                            message: 'What role should they be? (Required)',
+                            choices: res.map((roles) => roles.title)
+                        }])
+                        .then(answer => {
+                            const convertRole = res.find((roles) => roles.title === answer.title);
+                            console.log(convertRole);
+                            db.query(`UPDATE employee SET role_id = ${convertRole}where first_name="${convertEmployee.first_name}";`, function(err, res)
+                            {
+                                if(err) throw err;
+                            },
+                            console.log("Employee role updated!"),
+                            newOption()
+                        )
+                        
+                    })
+                    })
+                })
+    })
+}
+
+
 
 newOption();
