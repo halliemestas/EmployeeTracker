@@ -224,9 +224,9 @@ function updateRole()
                             choices: res.map((roles) => roles.title)
                         }])
                         .then(answer => {
-                            const convertRole = res.find((roles) => roles.title === answer.title);
-                            console.log(convertRole);
-                            db.query(`UPDATE employee SET role_id = ${convertRole}where first_name="${convertEmployee.first_name}";`, function(err, res)
+                            const convertRoleID = res.find((roles) => roles.title === answer.title);
+                            console.log(convertRoleID);
+                            db.query(`UPDATE employee SET role_id = ${convertRoleID}where first_name="${convertEmployee.first_name}";`, function(err, res)
                             {
                                 if(err) throw err;
                             },
