@@ -226,12 +226,12 @@ function updateRole()
                         .then(answer => {
                             const convertRoleID = res.find((roles) => roles.title === answer.roles);
                             console.log(convertRoleID.id);
-                            db.query(`UPDATE employee SET role_id = ${convertRoleID.id}where first_name="${convertEmployee.first_name}";`, function(err, res)
+                            db.query(`UPDATE employee SET role_id = ${convertRoleID.id} WHERE first_name="${convertEmployee.first_name}";`, function(err, res)
                             {
                                 if(err) throw err;
+                                console.log("Employee role updated!"),
+                                newOption()
                             },
-                            console.log("Employee role updated!"),
-                            newOption()
                         )
                         
                     })
